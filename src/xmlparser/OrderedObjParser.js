@@ -413,6 +413,9 @@ function addChild(currentNode, childNode, jPath, startIndex){
 const replaceEntitiesValue = function(val){
 
   if(this.options.processEntities){
+    // Early exit if no ampersand (all entities start with &)
+    if(val.indexOf('&') === -1) return val;
+
     for(let entityName in this.docTypeEntities){
       const entity = this.docTypeEntities[entityName];
       val = val.replace( entity.regx, entity.val);
