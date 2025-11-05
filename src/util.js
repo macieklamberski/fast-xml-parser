@@ -9,12 +9,8 @@ export function getAllMatches(string, regex) {
   const matches = [];
   let match = regex.exec(string);
   while (match) {
-    const allmatches = [];
+    const allmatches = [...match];
     allmatches.startIndex = regex.lastIndex - match[0].length;
-    const len = match.length;
-    for (let index = 0; index < len; index++) {
-      allmatches.push(match[index]);
-    }
     matches.push(allmatches);
     match = regex.exec(string);
   }
