@@ -184,7 +184,10 @@ function buildAttributesMap(attrStr, jPath, tagName) {
 }
 
 const parseXml = function(xmlData) {
-  xmlData = xmlData.replace(/\r\n?/g, "\n"); //TODO: remove this line
+  // Only normalize line endings if \r is present (skip for Unix files)
+  if(xmlData.indexOf('\r') !== -1) {
+    xmlData = xmlData.replace(/\r\n?/g, "\n");
+  }
   const xmlObj = new xmlNode('!xml');
   let currentNode = xmlObj;
   let textData = "";
