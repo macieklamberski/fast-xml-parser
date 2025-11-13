@@ -188,6 +188,7 @@ const parseXml = function(xmlData) {
   const xmlObj = new xmlNode('!xml');
   let currentNode = xmlObj;
   let textData = "";
+  let textDataChars = null; // Array for efficient string building
   let jPath = "";
   const docTypeReader = new DocTypeReader(this.options.processEntities);
   for(let i=0; i< xmlData.length; i++){//for each char in XML data
@@ -211,6 +212,11 @@ const parseXml = function(xmlData) {
         }
 
         if(currentNode){
+          // Join array into string before processing
+          if(textDataChars) {
+            textData = textDataChars.join('');
+            textDataChars = null;
+          }
           textData = this.saveTextToParentTag(textData, currentNode, jPath);
         }
 
@@ -230,12 +236,18 @@ const parseXml = function(xmlData) {
 
         currentNode = this.tagsNodeStack.pop();//avoid recursion, set the parent tag scope
         textData = "";
+        textDataChars = null;
         i = closeIndex;
       } else if( xmlData[i+1] === '?') {
 
         let tagData = readTagExp(xmlData,i, false, "?>");
         if(!tagData) throw new Error("Pi Tag is not closed.");
 
+        // Join array into string before processing
+        if(textDataChars) {
+          textData = textDataChars.join('');
+          textDataChars = null;
+        }
         textData = this.saveTextToParentTag(textData, currentNode, jPath);
         if( (this.options.ignoreDeclaration && tagData.tagName === "?xml") || this.options.ignorePiTags){
 
@@ -257,6 +269,11 @@ const parseXml = function(xmlData) {
         if(this.options.commentPropName){
           const comment = xmlData.substring(i + 4, endIndex - 2);
 
+          // Join array into string before processing
+          if(textDataChars) {
+            textData = textDataChars.join('');
+            textDataChars = null;
+          }
           textData = this.saveTextToParentTag(textData, currentNode, jPath);
 
           currentNode.add(this.options.commentPropName, [ { [this.options.textNodeName] : comment } ]);
@@ -270,6 +287,11 @@ const parseXml = function(xmlData) {
         const closeIndex = findClosingIndex(xmlData, "]]>", i, "CDATA is not closed.") - 2;
         const tagExp = xmlData.substring(i + 9,closeIndex);
 
+        // Join array into string before processing
+        if(textDataChars) {
+          textData = textDataChars.join('');
+          textDataChars = null;
+        }
         textData = this.saveTextToParentTag(textData, currentNode, jPath);
 
         let val = this.parseTextData(tagExp, currentNode.tagname, jPath, true, false, true, true);
@@ -299,6 +321,13 @@ const parseXml = function(xmlData) {
         if (currentNode && textData) {
           if(currentNode.tagname !== '!xml'){
             //when nested tag is found
+            textData = this.saveTextToParentTag(textData, currentNode, jPath, false);
+          }
+        } else if (currentNode && textDataChars) {
+          // Join array into string before processing
+          textData = textDataChars.join('');
+          textDataChars = null;
+          if(currentNode.tagname !== '!xml'){
             textData = this.saveTextToParentTag(textData, currentNode, jPath, false);
           }
         }
@@ -387,11 +416,14 @@ const parseXml = function(xmlData) {
             currentNode = childNode;
           }
           textData = "";
+          textDataChars = null;
           i = closeIndex;
         }
       }
     }else{
-      textData += xmlData[i];
+      // Use array push for memory efficiency (avoid intermediate string allocations)
+      if(!textDataChars) textDataChars = [];
+      textDataChars.push(xmlData[i]);
     }
   }
   return xmlObj.child;
@@ -473,7 +505,7 @@ function isItStopNode(stopNodes, jPath, currentTagName){
  */
 function tagExpWithClosingIndex(xmlData, i, closingChar = ">"){
   let attrBoundary;
-  let tagExp = "";
+  const tagExpChars = []; // Array for efficient string building
   for (let index = i; index < xmlData.length; index++) {
     let ch = xmlData[index];
     if (attrBoundary) {
@@ -484,20 +516,20 @@ function tagExpWithClosingIndex(xmlData, i, closingChar = ">"){
       if(closingChar[1]){
         if(xmlData[index + 1] === closingChar[1]){
           return {
-            data: tagExp,
+            data: tagExpChars.join(''),
             index: index
           }
         }
       }else{
         return {
-          data: tagExp,
+          data: tagExpChars.join(''),
           index: index
         }
       }
     } else if (ch === '\t') {
       ch = " "
     }
-    tagExp += ch;
+    tagExpChars.push(ch);
   }
 }
 

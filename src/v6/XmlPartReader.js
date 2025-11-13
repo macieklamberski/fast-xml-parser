@@ -56,14 +56,14 @@ export function readStopNode(xmlDoc, tagName, i){
  * @returns tag name
  */
 export function readClosingTagName(source){
-  let text = ""; //temporary data
+  const textChars = []; // Array for efficient string building
   while(source.canRead()){
     let ch = source.readCh();
     // if (ch === null || ch === undefined) break;
     // source.updateBuffer();
 
-    if (ch === ">") return text.trimEnd();
-    else text += ch;
+    if (ch === ">") return textChars.join('').trimEnd();
+    else textChars.push(ch);
   }
   throw new Error(`Unexpected end of source. Reading '${substr}'`);
 }
