@@ -14,6 +14,23 @@ import getIgnoreAttributesFn from "../ignoreAttributes.js";
 //const tagsRegx = new RegExp("<(\\/?[\\w:\\-\._]+)([^>]*)>(\\s*"+cdataRegx+")*([^<]+)?","g");
 //const tagsRegx = new RegExp("<(\\/?)((\\w*:)?([\\w:\\-\._]+))([^>]*)>([^<]*)("+cdataRegx+"([^<]*))*([^<]+)?","g");
 
+// Helper function: only trim if whitespace is present
+function trimIfNeeded(str) {
+  const len = str.length;
+  if(len === 0) return str;
+
+  const firstChar = str.charCodeAt(0);
+  const lastChar = str.charCodeAt(len - 1);
+
+  // Check if first or last char is whitespace (charCode <= 32)
+  if(firstChar > 32 && lastChar > 32) {
+    return str;  // No whitespace, return original
+  }
+
+  // Has whitespace, trim needed
+  return str.trim();
+}
+
 export default class OrderedObjParser{
   constructor(options){
     this.options = options;
@@ -197,7 +214,7 @@ const parseXml = function(xmlData) {
       // const _2ndChar = xmlData[nextIndex];
       if( xmlData[i+1] === '/') {//Closing Tag
         const closeIndex = findClosingIndex(xmlData, ">", i, "Closing Tag is not closed.")
-        let tagName = xmlData.substring(i+2,closeIndex).trim();
+        let tagName = trimIfNeeded(xmlData.substring(i+2,closeIndex));
 
         if(this.options.removeNSPrefix){
           const colonIndex = tagName.indexOf(":");
@@ -555,7 +572,7 @@ function readStopNodeData(xmlData, tagName, i){
     if( xmlData[i] === "<"){ 
       if (xmlData[i+1] === "/") {//close tag
           const closeIndex = findClosingIndex(xmlData, ">", i, `${tagName} is not closed`);
-          let closeTagName = xmlData.substring(i+2,closeIndex).trim();
+          let closeTagName = trimIfNeeded(xmlData.substring(i+2,closeIndex));
           if(closeTagName === tagName){
             openTagCount--;
             if (openTagCount === 0) {
