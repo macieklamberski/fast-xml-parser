@@ -193,6 +193,9 @@ function parseAttributesExp(attrStr, parser) {
 
 
 const getAllMatches = function(string, regex) {
+  // Reset regex state for safe reuse of module-scope regex objects
+  regex.lastIndex = 0;
+
   const matches = [];
   let match = regex.exec(string);
   while (match) {

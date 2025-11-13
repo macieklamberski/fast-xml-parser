@@ -6,6 +6,9 @@ export const nameRegexp = '[' + nameStartChar + '][' + nameChar + ']*';
 const regexName = new RegExp('^' + nameRegexp + '$');
 
 export function getAllMatches(string, regex) {
+  // Reset regex state for safe reuse of module-scope regex objects
+  regex.lastIndex = 0;
+
   const matches = [];
   let match = regex.exec(string);
   while (match) {
@@ -22,6 +25,7 @@ export function getAllMatches(string, regex) {
 }
 
 export const isName = function(string) {
+  regexName.lastIndex = 0; // Reset for safe reuse
   const match = regexName.exec(string);
   return !(match === null || typeof match === 'undefined');
 }
