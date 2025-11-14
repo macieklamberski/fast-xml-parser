@@ -55,6 +55,9 @@ export default class OrderedObjParser{
     this.saveTextToParentTag = saveTextToParentTag;
     this.addChild = addChild;
     this.ignoreAttributesFn = getIgnoreAttributesFn(this.options.ignoreAttributes)
+
+    // Convert unpairedTags array to Set for O(1) lookup
+    this.unpairedTagsSet = new Set(this.options.unpairedTags);
   }
 
 }
@@ -216,11 +219,11 @@ const parseXml = function(xmlData) {
 
         //check if last tag of nested tag was unpaired tag
         const lastTagName = jPath.substring(jPath.lastIndexOf(".")+1);
-        if(tagName && this.options.unpairedTags.indexOf(tagName) !== -1 ){
+        if(tagName && this.unpairedTagsSet.has(tagName)){
           throw new Error(`Unpaired tag can not be used as closing tag: </${tagName}>`);
         }
         let propIndex = 0
-        if(lastTagName && this.options.unpairedTags.indexOf(lastTagName) !== -1 ){
+        if(lastTagName && this.unpairedTagsSet.has(lastTagName)){
           propIndex = jPath.lastIndexOf('.', jPath.lastIndexOf('.')-1)
           this.tagsNodeStack.pop();
         }else{
@@ -305,7 +308,7 @@ const parseXml = function(xmlData) {
 
         //check if last tag was unpaired tag
         const lastTag = currentNode;
-        if(lastTag && this.options.unpairedTags.indexOf(lastTag.tagname) !== -1 ){
+        if(lastTag && this.unpairedTagsSet.has(lastTag.tagname)){
           currentNode = this.tagsNodeStack.pop();
           jPath = jPath.substring(0, jPath.lastIndexOf("."));
         }
@@ -327,7 +330,7 @@ const parseXml = function(xmlData) {
             i = result.closeIndex;
           }
           //unpaired tag
-          else if(this.options.unpairedTags.indexOf(tagName) !== -1){
+          else if(this.unpairedTagsSet.has(tagName)){
             
             i = result.closeIndex;
           }
