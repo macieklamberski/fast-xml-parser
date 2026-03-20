@@ -117,13 +117,22 @@ export default class OrderedObjParser {
     this.isCurrentNodeStopNode = false;
 
     // Pre-compile stopNodes expressions
+    this.simpleStopTags = new Set();
     if (this.options.stopNodes && this.options.stopNodes.length > 0) {
       this.stopNodeExpressions = [];
       for (let i = 0; i < this.options.stopNodes.length; i++) {
         const stopNodeExp = this.options.stopNodes[i];
         if (typeof stopNodeExp === 'string') {
           // Convert string to Expression object
-          this.stopNodeExpressions.push(new Expression(stopNodeExp));
+          const exp = new Expression(stopNodeExp);
+          this.stopNodeExpressions.push(exp);
+          // Index simple ..tagName patterns for O(1) lookup
+          if (exp.segments.length === 2
+            && exp.segments[0].type === 'deep-wildcard'
+            && !exp.hasAttributeCondition()
+            && !exp.hasPositionSelector()) {
+            this.simpleStopTags.add(exp.segments[1].tag);
+          }
         } else if (stopNodeExp instanceof Expression) {
           // Already an Expression object
           this.stopNodeExpressions.push(stopNodeExp);
@@ -723,6 +732,9 @@ function saveTextToParentTag(textData, parentNode, matcher, isLeafNode) {
  */
 function isItStopNode(stopNodeExpressions, matcher) {
   if (!stopNodeExpressions || stopNodeExpressions.length === 0) return false;
+
+  // O(1) fast path for simple ..tagName patterns
+  if (this.simpleStopTags.has(matcher.getCurrentTag())) return true;
 
   for (let i = 0; i < stopNodeExpressions.length; i++) {
     if (matcher.matches(stopNodeExpressions[i])) {
