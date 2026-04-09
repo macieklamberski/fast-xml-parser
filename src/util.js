@@ -45,7 +45,7 @@ export function getValue(v) {
 /**
  * Dangerous property names that could lead to prototype pollution or security issues
  */
-export const DANGEROUS_PROPERTY_NAMES = [
+export const DANGEROUS_PROPERTY_NAMES = new Set([
   // '__proto__',
   // 'constructor',
   // 'prototype',
@@ -56,6 +56,14 @@ export const DANGEROUS_PROPERTY_NAMES = [
   '__defineSetter__',
   '__lookupGetter__',
   '__lookupSetter__'
-];
+]);
 
-export const criticalProperties = ["__proto__", "constructor", "prototype"];
+export const criticalProperties = new Set(["__proto__", "constructor", "prototype"]);
+
+// Pre-computed lowercased sets for case-insensitive validation
+export const DANGEROUS_PROPERTY_NAMES_LOWER = new Set(
+  [...DANGEROUS_PROPERTY_NAMES].map(s => s.toLowerCase())
+);
+export const criticalPropertiesLower = new Set(
+  [...criticalProperties].map(s => s.toLowerCase())
+);

@@ -913,9 +913,9 @@ function transformTagName(fn, tagName, tagExp, options) {
 
 
 function sanitizeName(name, options) {
-  if (criticalProperties.includes(name)) {
+  if (criticalProperties.has(name)) {
     throw new Error(`[SECURITY] Invalid name: "${name}" is a reserved JavaScript keyword that could cause prototype pollution`);
-  } else if (DANGEROUS_PROPERTY_NAMES.includes(name)) {
+  } else if (DANGEROUS_PROPERTY_NAMES.has(name)) {
     return options.onDangerousProperty(name);
   }
   return name;

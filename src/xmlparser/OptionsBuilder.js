@@ -1,7 +1,7 @@
-import { DANGEROUS_PROPERTY_NAMES, criticalProperties } from "../util.js";
+import { DANGEROUS_PROPERTY_NAMES, criticalProperties, DANGEROUS_PROPERTY_NAMES_LOWER, criticalPropertiesLower } from "../util.js";
 
 const defaultOnDangerousProperty = (name) => {
-  if (DANGEROUS_PROPERTY_NAMES.includes(name)) {
+  if (DANGEROUS_PROPERTY_NAMES.has(name)) {
     return "__" + name;
   }
   return name;
@@ -67,13 +67,13 @@ function validatePropertyName(propertyName, optionName) {
   }
 
   const normalized = propertyName.toLowerCase();
-  if (DANGEROUS_PROPERTY_NAMES.some(dangerous => normalized === dangerous.toLowerCase())) {
+  if (DANGEROUS_PROPERTY_NAMES_LOWER.has(normalized)) {
     throw new Error(
       `[SECURITY] Invalid ${optionName}: "${propertyName}" is a reserved JavaScript keyword that could cause prototype pollution`
     );
   }
 
-  if (criticalProperties.some(dangerous => normalized === dangerous.toLowerCase())) {
+  if (criticalPropertiesLower.has(normalized)) {
     throw new Error(
       `[SECURITY] Invalid ${optionName}: "${propertyName}" is a reserved JavaScript keyword that could cause prototype pollution`
     );
