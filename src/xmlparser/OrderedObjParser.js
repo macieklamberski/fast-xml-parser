@@ -898,6 +898,9 @@ function fromCodePoint(str, base, prefix) {
   }
 }
 
+// Reusable object to avoid per-call allocation
+const _tagNameResult = { tagName: '', tagExp: '' };
+
 function transformTagName(fn, tagName, tagExp, options) {
   if (fn) {
     const newTagName = fn(tagName);
@@ -907,7 +910,9 @@ function transformTagName(fn, tagName, tagExp, options) {
     tagName = newTagName;
   }
   tagName = sanitizeName(tagName, options);
-  return { tagName, tagExp };
+  _tagNameResult.tagName = tagName;
+  _tagNameResult.tagExp = tagExp;
+  return _tagNameResult;
 }
 
 
