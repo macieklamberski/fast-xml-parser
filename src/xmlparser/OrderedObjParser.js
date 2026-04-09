@@ -479,7 +479,7 @@ const parseXml = function (xmlData) {
 
         // Push tag to matcher FIRST (with empty attrs for now) so callbacks see correct path
         if (tagName !== xmlObj.tagname) {
-          this.matcher.push(tagName, {}, namespace);
+          this.matcher.push(tagName, null, namespace);
         }
 
         // Now build attributes - callbacks will see correct matcher state
